@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"flag"
+	"fmt"
 	"image"
 	"image/draw"
 	"image/png"
@@ -59,7 +61,12 @@ func doMap(filename, outname string) (err error) {
 func loadTiles(size int) Tileset {
 	exeDir := "." // TODO: relative to executable?
 	dir := filepath.Join(exeDir, "ChucksChallengeImages")
-	return LoadTileDirectory(dir, size)
+	h0 := LoadTileDirectory(dir, size)
+	h1, err := LoadTileImage("tworld.png", size)
+	if err != nil {
+		panic(err)
+	}
+	return FallbackTileset{h0, h1}
 }
 
 func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
@@ -190,6 +197,9 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// 05 (5) = Ice Corner
 		// 06 (6) = Ice Corner
 		// 07 (7) = Ice Corner
+		if t.Type != 3 {
+			break
+		}
 		return h["Ice"]
 	case 8:
 		// 08 (8) = Water
@@ -255,12 +265,18 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// 23 (35) = Blue door
 		// 24 (36) = Yellow door
 		// 25 (37) = Green door
+		if t.Type != 35 {
+			break
+		}
 		return h["Doors"]
 	case 38, 39, 40, 41:
 		// 26 (38) = Red key
 		// 27 (39) = Blue key
 		// 28 (40) = Yellow key
 		// 29 (41) = Green key
+		if t.Type != 41 {
+			break
+		}
 		return h["Key"]
 	case 42, 43:
 		// 2a (42) = F.I.S.H.
@@ -304,6 +320,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// 3c (60) = Force Field orb
 		// 3d (61) = Fire orb
 		// 3e (62) = Water orb
+		break
 		return h["Orbs"]
 	case 63:
 		// 3f (63) = Security Gate Tools
@@ -439,10 +456,96 @@ func LoadTileDirectory(directory string, size int) ImageMap {
 	return tileMap
 }
 
-type SpriteMap struct{}
+var twTileInfo = []struct {
+	Type int
+	X    int
+	Y    int
+}{
+	{1, 0, 0},     // Floor
+	{2, 0, 1},     // Wall
+	{42, 0, 2},    // IC Chip
+	{8, 0, 3},     // Water
+	{9, 0, 4},     // Fire
+	{23, 0, 10},   // Dirt Block
+	{35, 1, 6},    // Blue Door
+	{34, 1, 7},    // Red Door
+	{37, 1, 8},    // Green Door
+	{36, 1, 9},    // Yellow Door
+	{45, 2, 14},   // Popup wall
+	{39, 6, 4},    // Blue Key
+	{38, 6, 5},    // Red Key
+	{41, 6, 6},    // Green Key
+	{40, 6, 7},    // Yellow Key
+	{0x3e, 6, 8},  // Flipper
+	{0x3d, 6, 9},  // Fire boots
+	{0x3b, 6, 10}, // Skates
+	{0x3c, 6, 11}, // Suction boots
+	{4, 1, 13},    // Ice corner SW
+	{5, 1, 10},    // Ice corner NW
+	{6, 1, 11},    // Ice corner NE
+	{7, 1, 12},    // Ice corner SE
+}
+
+type SpriteMap struct {
+	sheet image.Image
+	size  int
+}
+
+func (_ SpriteMap) Direction(t cc3d.Tile) image.Image { return nil }
+
+func (h SpriteMap) TileImage(t cc3d.Tile) (image.Image, image.Rectangle) {
+	for _, info := range twTileInfo {
+		if info.Type == t.Type {
+			x, y := info.X*h.size, info.Y*h.size
+			return h.sheet, image.Rect(x, y, x+h.size, y+h.size)
+		}
+	}
+	return nil, image.ZR
+}
 
 // Load a tileset from an image in Tile World's small format.
-func LoadTileImage(path string, size int) *SpriteMap {
-	// TODO
-	return nil
+func LoadTileImage(path string, size int) (*SpriteMap, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("error loading tileset: %w", err)
+	}
+	im, err := png.Decode(f)
+	if err != nil {
+		return nil, fmt.Errorf("error loading tileset %q: %w", path, err)
+	}
+	// Transparentify
+	if im, ok := im.(*image.RGBA); ok && im.Opaque() {
+		log.Print("transparentizing")
+		dim := im.Rect.Size()
+		magenta := []byte{0xff, 0, 0xff, 0xff}
+		for y := 0; y < dim.Y; y++ {
+			i := im.Stride * y
+			for x := 0; x < dim.X; x++ {
+				if bytes.Equal(im.Pix[i:i+4], magenta) {
+					im.Pix[i+0] = 0
+					im.Pix[i+2] = 0
+					im.Pix[i+3] = 0 // transparent
+				}
+				i += 4
+			}
+		}
+	}
+	// TODO: check size
+	return &SpriteMap{im, size}, nil
+}
+
+type FallbackTileset []Tileset
+
+func (h FallbackTileset) Direction(t cc3d.Tile) image.Image {
+	return h[0].Direction(t)
+}
+
+func (h FallbackTileset) TileImage(t cc3d.Tile) (image.Image, image.Rectangle) {
+	for i := range h {
+		im, dir := h[i].TileImage(t)
+		if im != nil {
+			return im, dir
+		}
+	}
+	return nil, image.ZR
 }

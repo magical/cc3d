@@ -83,6 +83,9 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 			if src != nil {
 				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), src, image.ZP)
 			}
+			if dir := h.Direction(t); dir != nil {
+				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), dir, image.ZP)
+			}
 		}
 	}
 	// Colored blocks are in the Tiles layer, Clone machines are in the Walls layer
@@ -99,6 +102,45 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 type ImageMap map[string]image.Image
 
 var warned = make(map[int]bool)
+
+func (h ImageMap) Direction(t cc3d.Tile) image.Image {
+	switch t.Type {
+	case 22, // Woop
+		24,  // Walker
+		25,  // Blinky
+		33,  // Blue Golem
+		51,  // Limpa
+		52,  // Limpy
+		53,  // Bouncer
+		54,  // Omni
+		55,  // Snappy
+		56,  // Screamer
+		68,  // Clone machine
+		72,  // Regular Security Bot
+		73,  // Rotating Security Bot
+		74,  // Multidirectional Security Bot
+		75,  // Laser Controller
+		76,  // Laser Shooter
+		87,  // Nibble
+		99,  // Yellow Golem
+		190, // RotatingCC Security Bot
+		194, // Baby Blinky
+		195, // Baby Screamer
+		196, // Legs Green
+		197: // Legs Red
+		switch t.Direction {
+		case 0:
+			return h["ArrowN"]
+		case 1:
+			return h["ArrowE"]
+		case 2:
+			return h["ArrowS"]
+		case 3:
+			return h["ArrowW"]
+		}
+	}
+	return nil
+}
 
 func (h ImageMap) WarnTileImage(t cc3d.Tile) image.Image {
 	m := h.TileImage(t)

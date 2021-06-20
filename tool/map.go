@@ -296,7 +296,7 @@ func (h ImageMap) TileImage(t cc3d.Tile) image.Image {
 		return h["CloneMachine"]
 	case 70:
 		// 46 (70) = Force floor random
-		return h["ConveyerBelt"]
+		return h["Gear"]
 	case 72, 73, 74:
 		// 48 (72) = Regular Security Bot
 		// 49 (73) = Rotating Security Bot

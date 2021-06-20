@@ -118,12 +118,18 @@ func (h ImageMap) TileImage(t cc3d.Tile) image.Image {
 	case 9:
 		// 09 (9) = Fire
 		return h["Lava"]
-	case 10, 11, 12, 13:
+	case 10:
 		// 0a (10) = Force floor
 		// 0b (11) = Force floor
 		// 0c (12) = Force floor
 		// 0d (13) = Force floor
-		return h["ConveyorBelt"]
+		return h["ConveyorNorth"]
+	case 11:
+		return h["ConveyorEast"]
+	case 12:
+		return h["ConveyorSouth"]
+	case 13:
+		return h["ConveyorWest"]
 	case 14, 15:
 		// 0e (14) = Closed toggle door
 		// 0f (15) = Open toggle door

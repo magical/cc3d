@@ -26,6 +26,9 @@ func mapMain() {
 	if flag.NArg() > 1 {
 		log.Fatal("too many arguments")
 	}
+	if outputFlag == "" {
+		log.Fatal("missing -o option")
+	}
 	err := doMap(filename, outputFlag)
 	if err != nil {
 		log.Fatal(err)

@@ -293,10 +293,12 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 50:
 		// 32 (50) = Dirt
 		return h["Mud"]
-	case 51, 52:
+	case 51:
 		// 33 (51) = Limpa
+		return h["Limpa"]
+	case 52:
 		// 34 (52) = Limpy
-		return h["LimpaLimpy"]
+		return h["Limpy"]
 	case 53:
 		// 35 (53) = Bouncer
 		return h["Bouncer"]

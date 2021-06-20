@@ -487,9 +487,16 @@ var twTileInfo = []struct {
 }
 
 type SpriteMap struct {
-	sheet image.Image
+	sheet subimager
 	size  int
 }
+
+type subimager interface {
+	image.Image
+	SubImage(r image.Rectangle) image.Image
+}
+
+var _ subimager = &image.RGBA{}
 
 func (_ SpriteMap) Direction(t cc3d.Tile) image.Image { return nil }
 
@@ -497,7 +504,8 @@ func (h SpriteMap) TileImage(t cc3d.Tile) (image.Image, image.Rectangle) {
 	for _, info := range twTileInfo {
 		if info.Type == t.Type {
 			x, y := info.X*h.size, info.Y*h.size
-			return h.sheet, image.Rect(x, y, x+h.size, y+h.size)
+			r := image.Rect(x, y, x+h.size, y+h.size)
+			return h.sheet.SubImage(r), r
 		}
 	}
 	return nil, image.ZR
@@ -515,7 +523,7 @@ func LoadTileImage(path string, size int) (*SpriteMap, error) {
 	}
 	// Transparentify
 	if im, ok := im.(*image.RGBA); ok && im.Opaque() {
-		log.Print("transparentizing")
+		//log.Print("transparentizing")
 		dim := im.Rect.Size()
 		magenta := []byte{0xff, 0, 0xff, 0xff}
 		for y := 0; y < dim.Y; y++ {
@@ -530,8 +538,9 @@ func LoadTileImage(path string, size int) (*SpriteMap, error) {
 			}
 		}
 	}
+	sim := im.(subimager)
 	// TODO: check size
-	return &SpriteMap{im, size}, nil
+	return &SpriteMap{sim, size}, nil
 }
 
 type FallbackTileset []Tileset

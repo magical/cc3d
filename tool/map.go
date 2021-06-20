@@ -14,6 +14,8 @@ import (
 	"github.com/nfnt/resize"
 )
 
+var flipFlag = flag.Bool("flip", false, "flip map coordinates")
+
 func mapMain() {
 	filename := flag.Arg(0)
 	if flag.NArg() == 0 {
@@ -38,7 +40,7 @@ func doMap(filename, outname string) (err error) {
 	if err != nil {
 		return err
 	}
-	im, err := makeMap(m)
+	im, err := makeMap(m, *flipFlag)
 	if err != nil {
 		return err
 	}
@@ -54,20 +56,29 @@ func doMap(filename, outname string) (err error) {
 	return out.Close()
 }
 
-func makeMap(m *cc3d.Map) (*image.RGBA, error) {
+func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 	const tileSize = 48
 	h := loadTiles(tileSize)
 	// A note about coordinate systems:
-	// In CC3D levels, the Y axis goes from the left side of the screen to the right side
-	// and the X axis goes from the bottom to the top of the screen (or really, towards/away from the viewer)
-	// This is standard(-ish) for 3D coordinates (Z points down?) but backwards from the usual convention for 2D graphics.
-	dy := m.Width * tileSize
-	dx := m.Height * tileSize
+	// Levels are displayed in CC3D rotated 90 degrees ccw from how they are actually stored
+	// (assuming a normal coordinate system with X going right and Y going down).
+	// We can rotate the coordinate system to match the game but that actually messes
+	// up directional tiles like force floors, which are consistent with the original
+	// coordinate system, not the rotated one. So we don't do that by default.
+	dx := m.Width * tileSize
+	dy := m.Height * tileSize
+	if flip {
+		dx, dy = dy, dx
+	}
 	im := image.NewRGBA(image.Rect(0, 0, dx, dy))
 	drawTiles := func(tiles []cc3d.Tile) {
 		for _, t := range tiles {
-			y := dy - t.X/64*tileSize - tileSize
-			x := t.Y / 64 * tileSize
+			x := t.X / 64 * tileSize
+			y := t.Y / 64 * tileSize
+			if flip {
+				x = t.Y / 64 * tileSize
+				y = dy - (t.X/64+1)*tileSize
+			}
 			src := h.WarnTileImage(t)
 			if src != nil {
 				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), src, image.ZP)

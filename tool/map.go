@@ -228,7 +228,7 @@ func (h ImageMap) TileImage(t cc3d.Tile) image.Image {
 	case 66:
 		// 42 (66) = Trap Control
 		return h["CageButton"]
-	case 58:
+	case 68:
 		// 44 (68) = Clone machine
 		return h["CloneMachine"]
 	case 70:

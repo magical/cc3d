@@ -257,23 +257,21 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 33:
 		// 21 (33) = Blue Golem
 		return h["GolemBlue"]
-	case 34, 35, 36, 37:
+	case 34, 36, 37:
 		// 22 (34) = Red door
 		// 23 (35) = Blue door
 		// 24 (36) = Yellow door
 		// 25 (37) = Green door
-		if t.Type != 35 {
-			break
-		}
+		break
+	case 35:
 		return h["Doors"]
-	case 38, 39, 40, 41:
+	case 38, 39, 40:
 		// 26 (38) = Red key
 		// 27 (39) = Blue key
 		// 28 (40) = Yellow key
+		break
+	case 41:
 		// 29 (41) = Green key
-		if t.Type != 41 {
-			break
-		}
 		return h["Key"]
 	case 42, 43:
 		// 2a (42) = F.I.S.H.
@@ -283,7 +281,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// 2c (44) = F.I.S.H. Door
 		return h["FISHDoor"]
 	case 45: // ???
-	// 2d (45) = Push up wall
+		// 2d (45) = Push up wall
 	case 46:
 		// 2e (46) = Appearing wall
 		return h["InvisibleWalls"]
@@ -318,7 +316,6 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// 3d (61) = Fire orb
 		// 3e (62) = Water orb
 		break
-		return h["Orbs"]
 	case 63:
 		// 3f (63) = Security Gate Tools
 		return h["SecurityGate"]
@@ -366,12 +363,18 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 144:
 		// 90 (144) = Speed orb
 		return h["Orbs"]
-	case 147, 148, 149, 150:
+	case 147:
 		// 93 (147) = Panel Up
 		// 94 (148) = Panel Right
 		// 95 (149) = Panel Down
 		// 96 (150) = Panel Left
+		return h["PanelN"]
+	case 148:
+		return h["PanelE"]
+	case 149:
 		return h["ThinWalls"]
+	case 150:
+		return h["PanelW"]
 	case 154, 155, 156, 157:
 		// 9a (154) = Blue Push Control
 		// 9b (155) = Green Push Control

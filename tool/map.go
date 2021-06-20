@@ -114,7 +114,7 @@ func (h ImageMap) TileImage(t cc3d.Tile) image.Image {
 		return h["Ice"]
 	case 8:
 		// 08 (8) = Water
-		return h["Water"]
+		return h["Water2"]
 	case 9:
 		// 09 (9) = Fire
 		return h["Lava"]

@@ -106,9 +106,10 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 		}
 	}
 	// 16287: Colored blocks are in the Tiles layer, Clone machines are in the Walls layer
+	// 16287: Colored blocks in Tiles layer on top of toggle walls in the Walls layer
 	// 1366: Panel walls in both the Blocks and Walls layers
-	drawTiles(m.Tiles)
 	drawTiles(m.Walls)
+	drawTiles(m.Tiles)
 	drawTiles(m.Switches)
 	drawTiles(m.Objects)
 	drawTiles(m.Enemies)

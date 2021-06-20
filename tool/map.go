@@ -56,9 +56,15 @@ func doMap(filename, outname string) (err error) {
 	return out.Close()
 }
 
+func loadTiles(size int) Tileset {
+	exeDir := "." // TODO: relative to executable?
+	dir := filepath.Join(exeDir, "ChucksChallengeImages")
+	return LoadTileDirectory(dir, size)
+}
+
 func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 	const tileSize = 48
-	h := loadTiles(tileSize)
+	tileset := loadTiles(tileSize)
 	// A note about coordinate systems:
 	// Levels are displayed in CC3D rotated 90 degrees ccw from how they are actually stored
 	// (assuming a normal coordinate system with X going right and Y going down).
@@ -79,11 +85,14 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 				x = t.Y / 64 * tileSize
 				y = dy - (t.X/64+1)*tileSize
 			}
-			src := h.WarnTileImage(t)
+			src, r := tileset.TileImage(t)
+			warnMissingTileImage(t, src)
 			if src != nil {
-				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), src, image.ZP)
+				p := r.Min
+				r := r.Sub(p).Intersect(image.Rect(0, 0, tileSize, tileSize)).Add(image.Pt(x, y))
+				draw.Over.Draw(im, r, src, p)
 			}
-			if dir := h.Direction(t); dir != nil {
+			if dir := tileset.Direction(t); dir != nil {
 				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), dir, image.ZP)
 			}
 		}
@@ -99,9 +108,16 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 	return im, nil
 }
 
-type ImageMap map[string]image.Image
+type Tileset interface {
+	// Returns an arrow indicating the direction for a tile
+	// or nil if the tile is not a creature.
+	Direction(t cc3d.Tile) image.Image
 
-var warned = make(map[int]bool)
+	// Returns the image for a tile.
+	TileImage(t cc3d.Tile) (image.Image, image.Rectangle)
+}
+
+type ImageMap map[string]image.Image
 
 func (h ImageMap) Direction(t cc3d.Tile) image.Image {
 	switch t.Type {
@@ -142,15 +158,25 @@ func (h ImageMap) Direction(t cc3d.Tile) image.Image {
 	return nil
 }
 
-func (h ImageMap) WarnTileImage(t cc3d.Tile) image.Image {
-	m := h.TileImage(t)
-	if m == nil && !warned[t.Type] {
+var warned = make(map[int]bool)
+
+func warnMissingTileImage(t cc3d.Tile, im image.Image) image.Image {
+	if im == nil && !warned[t.Type] {
 		log.Printf("warning: missing tile image for %d %s", t.Type, t.Attributes.Name)
 		warned[t.Type] = true
 	}
-	return m
+	return im
 }
-func (h ImageMap) TileImage(t cc3d.Tile) image.Image {
+
+func (h ImageMap) TileImage(t cc3d.Tile) (image.Image, image.Rectangle) {
+	im := h.tileImage(t)
+	if im != nil {
+		return im, im.Bounds()
+	}
+	return nil, image.ZR
+}
+
+func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	switch t.Type {
 	case 1:
 		//01 (1) = Floor Tile
@@ -390,11 +416,10 @@ func (h ImageMap) TileImage(t cc3d.Tile) image.Image {
 	return nil
 }
 
-func loadTiles(size int) ImageMap {
+// Load a tileset from a directory containing PNG files for individual tiles.
+func LoadTileDirectory(directory string, size int) ImageMap {
 	tileMap := make(ImageMap)
-	exeDir := "." // TODO: relative to executable?
-	dir := filepath.Join(exeDir, "ChucksChallengeImages")
-	files, _ := filepath.Glob(filepath.Join(dir, "*.png"))
+	files, _ := filepath.Glob(filepath.Join(directory, "*.png"))
 	for _, imgPath := range files {
 		filename := filepath.Base(imgPath)
 		name, _, _ := cut(filename, ".")
@@ -412,4 +437,12 @@ func loadTiles(size int) ImageMap {
 		tileMap[name] = im
 	}
 	return tileMap
+}
+
+type SpriteMap struct{}
+
+// Load a tileset from an image in Tile World's small format.
+func LoadTileImage(path string, size int) *SpriteMap {
+	// TODO
+	return nil
 }

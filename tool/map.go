@@ -57,13 +57,17 @@ func doMap(filename, outname string) (err error) {
 func makeMap(m *cc3d.Map) (*image.RGBA, error) {
 	const tileSize = 48
 	h := loadTiles(tileSize)
-	dx := m.Width * tileSize
-	dy := m.Height * tileSize
+	// A note about coordinate systems:
+	// In CC3D levels, the Y axis goes from the left side of the screen to the right side
+	// and the X axis goes from the bottom to the top of the screen (or really, towards/away from the viewer)
+	// This is standard(-ish) for 3D coordinates (Z points down?) but backwards from the usual convention for 2D graphics.
+	dy := m.Width * tileSize
+	dx := m.Height * tileSize
 	im := image.NewRGBA(image.Rect(0, 0, dx, dy))
 	drawTiles := func(tiles []cc3d.Tile) {
 		for _, t := range tiles {
-			x := t.X / 64 * tileSize
-			y := t.Y / 64 * tileSize
+			y := dy - t.X/64*tileSize - tileSize
+			x := t.Y / 64 * tileSize
 			src := h.WarnTileImage(t)
 			if src != nil {
 				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), src, image.ZP)

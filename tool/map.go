@@ -92,12 +92,10 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 				x = t.Y / 64 * tileSize
 				y = dy - (t.X/64+1)*tileSize
 			}
-			src, r := tileset.TileImage(t)
+			src := tileset.TileImage(t)
 			warnMissingTileImage(t, src)
 			if src != nil {
-				p := r.Min
-				r := r.Sub(p).Intersect(image.Rect(0, 0, tileSize, tileSize)).Add(image.Pt(x, y))
-				draw.Over.Draw(im, r, src, p)
+				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), src, src.Bounds().Min)
 			}
 			if dir := tileset.Direction(t); dir != nil {
 				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), dir, image.ZP)
@@ -121,7 +119,7 @@ type Tileset interface {
 	Direction(t cc3d.Tile) image.Image
 
 	// Returns the image for a tile.
-	TileImage(t cc3d.Tile) (image.Image, image.Rectangle)
+	TileImage(t cc3d.Tile) image.Image
 }
 
 type ImageMap map[string]image.Image
@@ -175,12 +173,8 @@ func warnMissingTileImage(t cc3d.Tile, im image.Image) image.Image {
 	return im
 }
 
-func (h ImageMap) TileImage(t cc3d.Tile) (image.Image, image.Rectangle) {
-	im := h.tileImage(t)
-	if im != nil {
-		return im, im.Bounds()
-	}
-	return nil, image.ZR
+func (h ImageMap) TileImage(t cc3d.Tile) image.Image {
+	return h.tileImage(t)
 }
 
 func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
@@ -500,15 +494,15 @@ var _ subimager = &image.RGBA{}
 
 func (_ SpriteMap) Direction(t cc3d.Tile) image.Image { return nil }
 
-func (h SpriteMap) TileImage(t cc3d.Tile) (image.Image, image.Rectangle) {
+func (h SpriteMap) TileImage(t cc3d.Tile) image.Image {
 	for _, info := range twTileInfo {
 		if info.Type == t.Type {
 			x, y := info.X*h.size, info.Y*h.size
 			r := image.Rect(x, y, x+h.size, y+h.size)
-			return h.sheet.SubImage(r), r
+			return h.sheet.SubImage(r)
 		}
 	}
-	return nil, image.ZR
+	return nil
 }
 
 // Load a tileset from an image in Tile World's small format.
@@ -549,12 +543,11 @@ func (h FallbackTileset) Direction(t cc3d.Tile) image.Image {
 	return h[0].Direction(t)
 }
 
-func (h FallbackTileset) TileImage(t cc3d.Tile) (image.Image, image.Rectangle) {
+func (h FallbackTileset) TileImage(t cc3d.Tile) image.Image {
 	for i := range h {
-		im, dir := h[i].TileImage(t)
-		if im != nil {
-			return im, dir
+		if im := h[i].TileImage(t); im != nil {
+			return im
 		}
 	}
-	return nil, image.ZR
+	return nil
 }

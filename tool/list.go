@@ -11,9 +11,7 @@ import (
 	"github.com/magical/cc3d"
 )
 
-func main() {
-	log.SetFlags(0)
-	flag.Parse()
+func listMain() {
 	if filename := flag.Arg(0); flag.NArg() == 0 || flag.NArg() == 1 && filename == "-" {
 		err := process("-")
 		if err != nil {

@@ -379,12 +379,18 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["ThinWalls"]
 	case 150:
 		return h["PanelW"]
-	case 154, 155, 156, 157:
+	case 154:
 		// 9a (154) = Blue Push Control
 		// 9b (155) = Green Push Control
 		// 9c (156) = Red Push Control
 		// 9d (157) = Yellow Push Control
+		return h["PressurePadBlue"]
+	case 155:
+		return h["PressurePadGreen"]
+	case 156:
 		return h["PressurePad"]
+	case 157:
+		return h["PressurePadYellow"]
 	case 158, 159, 160:
 		// 9e (158) = Toggle Blue Control
 		// 9f (159) = Toggle Red Control
@@ -396,20 +402,36 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// a3 (163) = Red Block
 		// a4 (164) = Yellow Block
 		return h["ColouredBlock"]
-	case 165, 166, 167, 168, 169, 170:
+	case 165:
 		// a5 (165) = Toggle Blue Door Closed/Open
 		// a6 (166) = Toggle Red Door Closed/Open
 		// a7 (167) = Toggle Yellow Door Closed/Open
 		// a8 (168) = Toggle Blue Door Open/Closed
 		// a9 (169) = Toggle Red Door Open/Closed
 		// aa (170) = Toggle Yellow Door Open/Closed
+		return h["PushGateBlue"]
+	case 166:
+		return h["PushGateRed"]
+	case 167:
 		return h["PushGate"]
-	case 175, 176, 177, 178:
+	case 168:
+		return h["PushGateBlue"]
+	case 169:
+		return h["PushGateRed"]
+	case 170:
+		return h["PushGate"]
+	case 175:
 		// af (175) = Push Green Door Closed
 		// b0 (176) = Push Blue Door Closed
 		// b1 (177) = Push Red Door Closed
 		// b2 (178) = Push Yellow Door Closed
+		return h["PressureGateGreen"]
+	case 176:
+		return h["PressureGateBlue"]
+	case 177:
 		return h["PressureGate"]
+	case 178:
+		return h["PressureGateYellow"]
 	case 184, 185, 186, 187:
 		// b8 (184) = Reflector LU
 		// b9 (185) = Reflector DL

@@ -105,14 +105,16 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 			}
 		}
 	}
-	// Colored blocks are in the Tiles layer, Clone machines are in the Walls layer
-	drawTiles(m.Walls)
+	// 16287: Colored blocks are in the Tiles layer, Clone machines are in the Walls layer
+	// 1366: Panel walls in both the Blocks and Walls layers
 	drawTiles(m.Tiles)
+	drawTiles(m.Walls)
 	drawTiles(m.Switches)
 	drawTiles(m.Objects)
 	drawTiles(m.Enemies)
 	drawTiles(m.Blocks)
 	drawTiles(m.Player)
+	//im = resize.Resize(uint(dx/2), uint(dy/2), im, resize.NearestNeighbor).(*image.RGBA)
 	return im, nil
 }
 

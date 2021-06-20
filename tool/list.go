@@ -40,7 +40,8 @@ func process(filename string) error {
 	if filename == "-" {
 		f = os.Stdin
 	} else {
-		f, err := os.Open(filename)
+		var err error
+		f, err = os.Open(filename)
 		if err != nil {
 			return err
 		}

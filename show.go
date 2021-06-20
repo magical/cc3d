@@ -34,8 +34,8 @@ func PrintInfo(m *Map, levelid string) {
 	countTiles := func(tiles []Tile) {
 		for _, t := range tiles {
 			ta[t.Type] = addAttrs(ta[t.Type], t.Attributes)
-			//p := point{t.X / 64, t.Y / 64}
-			//grid[p] = append(grid[p], t)
+			p := point{t.X / 64, t.Y / 64}
+			grid[p] = append(grid[p], t)
 		}
 	}
 	countTiles(m.Player)

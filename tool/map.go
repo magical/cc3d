@@ -220,10 +220,10 @@ func (h ImageMap) TileImage(t cc3d.Tile) image.Image {
 		return h["PushButton"]
 	case 32:
 		// 20 (32) = Blue Golem control
-		return h["GolemBlue"]
+		return h["GolemBlueSwitch"]
 	case 33:
 		// 21 (33) = Blue Golem
-		return h["GolemBlueSwitch"]
+		return h["GolemBlue"]
 	case 34, 35, 36, 37:
 		// 22 (34) = Red door
 		// 23 (35) = Blue door

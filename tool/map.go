@@ -414,18 +414,15 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 144:
 		// 90 (144) = Speed orb
 		return h["Orbs"]
-	case 147:
+	case 147, 148, 149, 150:
 		// 93 (147) = Panel Up
 		// 94 (148) = Panel Right
 		// 95 (149) = Panel Down
 		// 96 (150) = Panel Left
-		return h["PanelN"]
-	case 148:
-		return h["PanelE"]
-	case 149:
-		return h["ThinWalls"]
-	case 150:
-		return h["PanelW"]
+		// Tile ID doesn't actually matter, only the direction matters
+		dir := t.Direction % 4
+		panels := []string{"PanelE", "ThinWalls", "PanelW", "PanelN"}
+		return h[panels[dir]]
 	case 154:
 		// 9a (154) = Blue Push Control
 		// 9b (155) = Green Push Control

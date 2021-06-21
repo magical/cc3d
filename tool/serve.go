@@ -35,10 +35,19 @@ func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 	} else if req.URL.Path == "/" {
 		s.serveIndex(w, req)
-	} else if strings.HasSuffix(req.URL.Path, ".png") {
-		idStr := strings.TrimSuffix(path.Base(req.URL.Path), ".png")
+	} else if base := path.Base(req.URL.Path); strings.HasSuffix(base, ".png") {
+		idStr := strings.TrimSuffix(base, ".png")
 		if id, err := strconv.ParseInt(idStr, 10, 64); err == nil {
 			s.serveMap(w, req, id)
+		} else {
+			http.NotFound(w, req)
+		}
+
+	} else if !strings.Contains(base, ".") {
+		if id, err := strconv.ParseInt(base, 10, 64); err == nil {
+			s.serveInfo(w, req, id)
+		} else {
+			http.NotFound(w, req)
 		}
 	} else {
 		http.NotFound(w, req)
@@ -67,10 +76,25 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 		name := filepath.Base(fullname)
 		id, _, _ := cut(name, ".")
 		if _, err := strconv.ParseInt(id, 10, 0); err == nil {
-			writeln(`<a href="%[1]s.png">%[1]s</a>`, escape(id))
+			writeln(`<a href="%[1]s">%[1]s</a>`, escape(id))
 		}
 	}
 	writeln("</font>")
+}
+
+func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
+	w.Header().Set("Content-Type", "text/html")
+	writeln := func(msg string, v ...interface{}) {
+		fmt.Fprintf(w, msg+"\n", v...)
+	}
+	writeln("<!doctype html>")
+	writeln("<title>CC3d Levelid %d</title>", id)
+	writeln("<p><img src=\"%d.png\">", id)
+	baseURL := "http://cc3d.chuckschallenge.com"
+	if id < 15000 {
+		baseURL = "http://beta.chuckschallenge.com"
+	}
+	writeln("<p><a href=\"%s/Share.php?levelId=%d\">View this level on chuckschallenge.com</a>", escape(baseURL), id)
 }
 
 func (s *server) serveMap(w http.ResponseWriter, req *http.Request, id int64) {

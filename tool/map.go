@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/magical/cc3d"
 	"github.com/nfnt/resize"
@@ -201,12 +202,24 @@ func (h ImageMap) Direction(t cc3d.Tile) image.Image {
 	return nil
 }
 
-var warned = make(map[int]bool)
+var (
+	warned = make(map[int]bool)
+	warnMu sync.RWMutex
+)
 
 func warnMissingTileImage(t cc3d.Tile, im image.Image) image.Image {
-	if im == nil && !warned[t.Type] {
-		log.Printf("warning: missing tile image for %d %s", t.Type, t.Attributes.Name)
-		warned[t.Type] = true
+	if im == nil {
+		warnMu.RLock()
+		done := warned[t.Type]
+		warnMu.RUnlock()
+		if !done {
+			warnMu.Lock()
+			if !warned[t.Type] {
+				log.Printf("warning: missing tile image for %d %s", t.Type, t.Attributes.Name)
+				warned[t.Type] = true
+			}
+			warnMu.Unlock()
+		}
 	}
 	return im
 }

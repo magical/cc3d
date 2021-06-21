@@ -47,7 +47,8 @@ func doMap(filename, outname string) (err error) {
 	if err != nil {
 		return err
 	}
-	im, err := makeMap(m, *flipFlag)
+	tileset := loadTiles(tileSize)
+	im, err := makeMap(m, tileset, *flipFlag)
 	if err != nil {
 		return err
 	}
@@ -74,9 +75,9 @@ func loadTiles(size int) Tileset {
 	return FallbackTileset{h0, h1}
 }
 
-func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
-	const tileSize = 48
-	tileset := loadTiles(tileSize)
+const tileSize = 48
+
+func makeMap(m *cc3d.Map, tileset Tileset, flip bool) (*image.RGBA, error) {
 	// A note about coordinate systems:
 	// Levels are displayed in CC3D rotated 90 degrees ccw from how they are actually stored
 	// (assuming a normal coordinate system with X going right and Y going down).

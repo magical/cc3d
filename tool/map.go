@@ -420,6 +420,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// 95 (149) = Panel Down
 		// 96 (150) = Panel Left
 		// Tile ID doesn't actually matter, only the direction matters
+		// Compare levels 18620 and 1366 for example
 		dir := t.Direction % 4
 		panels := []string{"PanelE", "ThinWalls", "PanelW", "PanelN"}
 		return h[panels[dir]]

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 	"log"
@@ -87,6 +88,7 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 		dx, dy = dy, dx
 	}
 	im := image.NewRGBA(image.Rect(0, 0, dx, dy))
+	base := make(map[image.Point]bool)
 	drawTiles := func(tiles []cc3d.Tile) {
 		for _, t := range tiles {
 			x := t.X / 64 * tileSize
@@ -97,19 +99,25 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 			}
 			src := tileset.TileImage(t)
 			warnMissingTileImage(t, src)
+			var mask image.Image
 			if src != nil {
-				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), src, src.Bounds().Min)
+				if isMostlyOpaque(src) && base[image.Pt(t.X, t.Y)] {
+					mask = image.NewUniform(color.Alpha{0x80})
+					//log.Println("masking tile %s", t.Attributes.Name)
+				}
+				draw.DrawMask(im, image.Rect(x, y, x+tileSize, y+tileSize), src, src.Bounds().Min, mask, image.ZP, draw.Over)
 			}
 			if dir := tileset.Direction(t); dir != nil {
-				draw.Over.Draw(im, image.Rect(x, y, x+tileSize, y+tileSize), dir, image.ZP)
+				draw.DrawMask(im, image.Rect(x, y, x+tileSize, y+tileSize), dir, image.ZP, mask, image.ZP, draw.Over)
 			}
+			base[image.Pt(t.X, t.Y)] = true
 		}
 	}
 	// 16287: Colored blocks are in the Tiles layer, Clone machines are in the Walls layer
 	// 16287: Colored blocks in Tiles layer on top of toggle walls in the Walls layer
 	// 1366: Panel walls in both the Blocks and Walls layers
-	drawTiles(m.Walls)
 	drawTiles(m.Tiles)
+	drawTiles(m.Walls)
 	drawTiles(m.Switches)
 	drawTiles(m.Objects)
 	drawTiles(m.Enemies)
@@ -117,6 +125,30 @@ func makeMap(m *cc3d.Map, flip bool) (*image.RGBA, error) {
 	drawTiles(m.Player)
 	//im = resize.Resize(uint(dx/2), uint(dy/2), im, resize.NearestNeighbor).(*image.RGBA)
 	return im, nil
+}
+
+func isMostlyOpaque(m image.Image) bool {
+	if p, ok := m.(*image.RGBA); ok {
+		alpha := 1.0
+		n := 0
+		i0, i1 := 3, p.Rect.Dx()*4
+		for y := p.Rect.Min.Y; y < p.Rect.Max.Y; y++ {
+			for i := i0; i < i1; i += 4 {
+				if p.Pix[i] != 0xff {
+					alpha += float64(p.Pix[i]) / 0xff
+					n++
+				}
+			}
+			i0 += p.Stride
+			i1 += p.Stride
+		}
+		return alpha/float64(n) > 0.5
+	} else if m, ok := m.(interface {
+		Opaque() bool
+	}); ok {
+		return m.Opaque()
+	}
+	return true
 }
 
 type Tileset interface {
@@ -484,6 +516,9 @@ func LoadTileDirectory(directory string, size int) ImageMap {
 			log.Printf("error loading tile %q: %v", name, err)
 		}
 		im = resize.Resize(uint(size), uint(size), im, resize.Bilinear)
+		//if !isMostlyOpaque(im) {
+		//	log.Printf("tile %q is not opaque", name)
+		//}
 		tileMap[name] = im
 	}
 	return tileMap

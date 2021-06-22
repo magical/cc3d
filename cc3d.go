@@ -80,11 +80,6 @@ func (a Attributes) Equal(x Attributes) bool {
 		a.MapChar == x.MapChar
 }
 
-type NamedReader interface {
-	io.Reader
-	Name() string
-}
-
 func SearchLevel(m *Map, levelid string) {
 	found := false
 	var names []string
@@ -109,9 +104,14 @@ func SearchLevel(m *Map, levelid string) {
 	}
 }
 
-func ReadLevel(r NamedReader) (*Map, error) {
+type namedReader interface {
+	io.Reader
+	Name() string
+}
+
+func ReadLevel(r io.Reader) (*Map, error) {
 	var d *xml.Decoder
-	if strings.HasSuffix(r.Name(), ".gz") {
+	if nr, ok := r.(namedReader); ok && strings.HasSuffix(nr.Name(), ".gz") {
 		zr, err := gzip.NewReader(r)
 		if err != nil {
 			return nil, err

@@ -59,7 +59,7 @@ const levelDir = "cc3d_levels"
 var escape = template.HTMLEscapeString
 
 func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	writeln := func(msg string, v ...interface{}) {
 		fmt.Fprintf(w, msg+"\n", v...)
 	}
@@ -82,7 +82,7 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
-	w.Header().Set("Content-Type", "text/html")
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	writeln := func(msg string, v ...interface{}) {
 		fmt.Fprintf(w, msg+"\n", v...)
 	}

@@ -65,7 +65,7 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 	}
 	writeln("<!doctype html>")
 	writeln("<title>CC3d Level maps</title>")
-	writeln("<font face=\"Comic Sans MS\">")
+	writeln("<body style=\"font-family: Comic Sans MS\">")
 	writeln("<h1>CC3d Level maps</h1>")
 	files, _ := filepath.Glob(filepath.Join("cc3d_levels", "*.xml.gz"))
 	naturalsort.Sort(files)
@@ -79,7 +79,6 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 			writeln(`<a href="%[1]s">%[1]s</a>`, escape(id))
 		}
 	}
-	writeln("</font>")
 }
 
 func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
@@ -89,6 +88,7 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
 	}
 	writeln("<!doctype html>")
 	writeln("<title>CC3d Levelid %d</title>", id)
+	writeln("<body style=\"font-family: Comic Sans MS\">")
 	writeln("<p><img src=\"%d.png\">", id)
 	baseURL := "http://cc3d.chuckschallenge.com"
 	if id < 15000 {

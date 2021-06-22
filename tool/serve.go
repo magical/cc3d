@@ -12,7 +12,6 @@ import (
 	"fmt"
 	"html/template"
 	"image/png"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -95,15 +94,6 @@ type Map struct {
 	ModTime time.Time
 }
 
-type namedReader struct {
-	io.Reader
-	name string
-}
-
-func (r namedReader) Name() string {
-	return r.name
-}
-
 // Read the level with the given id.
 // Returns nil and prints an error if the level isn't found an error occurs during parsing.
 func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id int64) *Map {
@@ -120,7 +110,7 @@ func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id int64) *
 		return nil
 	}
 	mtime := zr.Header.ModTime
-	m, err := cc3d.ReadLevel(namedReader{zr, zr.Header.Name})
+	m, err := cc3d.ReadLevel(zr)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 500)

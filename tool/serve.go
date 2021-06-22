@@ -21,9 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/magical/cc3d"
-
 	"github.com/juju/naturalsort"
+	"github.com/magical/cc3d"
 )
 
 var portFlag = flag.String("port", ":8080", "port (and host) to listen for HTTP connections on")
@@ -109,7 +108,7 @@ func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id int64) *
 		http.Error(w, err.Error(), 500)
 		return nil
 	}
-	mtime := zr.Header.ModTime
+	mtime := zr.Header.ModTime.UTC()
 	m, err := cc3d.ReadLevel(zr)
 	if err != nil {
 		log.Println(err)
@@ -120,19 +119,34 @@ func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id int64) *
 }
 
 func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
+	m := s.readLevel(w, req, id)
+	if m == nil {
+		return
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	writeln := func(msg string, v ...interface{}) {
 		fmt.Fprintf(w, msg+"\n", v...)
 	}
 	writeln("<!doctype html>")
-	writeln("<title>CC3d Levelid %d</title>", id)
+	writeln("<title>CC3d Levelid %d: %s by %s</title>", id, escape(m.Map.Name), escape(m.Map.Author))
 	writeln("<body style=\"font-family: Comic Sans MS\">")
+	writeln("<h1>%s by %s</h1>", escape(def(m.Map.Name, "Untitled")), escape(def(m.Map.Author, "Author Unknown")))
 	writeln("<p><img src=\"%d.png\">", id)
+	if !m.ModTime.IsZero() {
+		writeln("<p>%s", m.ModTime.Format("Monday, January 02 2006 15:04:05 UTC"))
+	}
 	baseURL := "http://cc3d.chuckschallenge.com"
 	if id < 15000 {
 		baseURL = "http://beta.chuckschallenge.com"
 	}
 	writeln("<p><a href=\"%s/Share.php?levelId=%d\">View this level on chuckschallenge.com</a>", escape(baseURL), id)
+}
+
+func def(s, defaultStr string) string {
+	if s == "" {
+		s = defaultStr
+	}
+	return s
 }
 
 func (s *server) serveMap(w http.ResponseWriter, req *http.Request, id int64) {

@@ -1,10 +1,18 @@
 package main
 
+// TODO:
+// - more info on level pages
+// - which tiles go in which layers? what editor categories?
+// - make rotated reflector tiles
+// - make open toggle doors
+
 import (
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"html/template"
 	"image/png"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +20,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/magical/cc3d"
 
@@ -81,6 +90,45 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+type Map struct {
+	*cc3d.Map
+	ModTime time.Time
+}
+
+type namedReader struct {
+	io.Reader
+	name string
+}
+
+func (r namedReader) Name() string {
+	return r.name
+}
+
+// Read the level with the given id.
+// Returns nil and prints an error if the level isn't found an error occurs during parsing.
+func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id int64) *Map {
+	filename := filepath.Join("cc3d_levels", strconv.Itoa(int(id))+".xml.gz")
+	f, err := os.Open(filename)
+	if err != nil {
+		http.NotFound(w, req)
+		return nil
+	}
+	zr, err := gzip.NewReader(f)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), 500)
+		return nil
+	}
+	mtime := zr.Header.ModTime
+	m, err := cc3d.ReadLevel(namedReader{zr, zr.Header.Name})
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), 500)
+		return nil
+	}
+	return &Map{m, mtime}
+}
+
 func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	writeln := func(msg string, v ...interface{}) {
@@ -98,19 +146,11 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
 }
 
 func (s *server) serveMap(w http.ResponseWriter, req *http.Request, id int64) {
-	filename := filepath.Join("cc3d_levels", strconv.Itoa(int(id))+".xml.gz")
-	f, err := os.Open(filename)
-	if err != nil {
-		http.NotFound(w, req)
+	m := s.readLevel(w, req, id)
+	if m == nil {
 		return
 	}
-	m, err := cc3d.ReadLevel(f)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), 500)
-		return
-	}
-	im, err := makeMap(m, s.tileset, false)
+	im, err := makeMap(m.Map, s.tileset, false)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 500)

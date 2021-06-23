@@ -45,21 +45,29 @@ func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		s.serveIndex(w, req)
 	} else if base := path.Base(req.URL.Path); strings.HasSuffix(base, ".png") {
 		idStr := strings.TrimSuffix(base, ".png")
-		if id, err := strconv.ParseInt(idStr, 10, 64); err == nil {
-			s.serveMap(w, req, id)
+		if s.isID(idStr) {
+			s.serveMap(w, req, idStr)
 		} else {
 			http.NotFound(w, req)
 		}
-
 	} else if !strings.Contains(base, ".") {
-		if id, err := strconv.ParseInt(base, 10, 64); err == nil {
-			s.serveInfo(w, req, id)
+		if s.isID(base) {
+			s.serveInfo(w, req, base)
 		} else {
 			http.NotFound(w, req)
 		}
 	} else {
 		http.NotFound(w, req)
 	}
+}
+
+// Reports whether idStr looks like a valid levelid.
+// Might not actually be valid.
+func (s *server) isID(idStr string) bool {
+	if _, err := strconv.ParseInt(idStr, 10, 64); err == nil {
+		return true
+	}
+	return false
 }
 
 const levelDir = "cc3d_levels"
@@ -81,10 +89,12 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 	for _, fullname := range files {
 		name := filepath.Base(fullname)
 		id, _, _ := cut(name, ".")
-		if n, err := strconv.ParseInt(id, 10, 0); err == nil {
+		if n, err := strconv.Atoi(id); err == nil {
 			if n == 1004 || n == 16501 || n == 17001 || n%250 == 0 {
 				writeln("<p>")
 			}
+		}
+		if s.isID(id) {
 			writeln(`<a href="%[1]s">%[1]s</a>`, escape(id))
 		}
 	}
@@ -97,8 +107,8 @@ type Map struct {
 
 // Read the level with the given id.
 // Returns nil and prints an error if the level isn't found an error occurs during parsing.
-func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id int64) *Map {
-	filename := filepath.Join("cc3d_levels", strconv.Itoa(int(id))+".xml.gz")
+func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id string) *Map {
+	filename := filepath.Join("cc3d_levels", id+".xml.gz")
 	f, err := os.Open(filename)
 	if err != nil {
 		http.NotFound(w, req)
@@ -120,7 +130,7 @@ func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id int64) *
 	return &Map{m, mtime}
 }
 
-func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
+func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) {
 	m := s.readLevel(w, req, id)
 	if m == nil {
 		return
@@ -130,18 +140,18 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
 		fmt.Fprintf(w, msg+"\n", v...)
 	}
 	writeln("<!doctype html>")
-	writeln("<title>CC3d Levelid %d: %s by %s</title>", id, escape(m.Map.Name), escape(m.Map.Author))
+	writeln("<title>CC3d Levelid %s: %s by %s</title>", escape(id), escape(m.Map.Name), escape(m.Map.Author))
 	writeln("<body style=\"font-family: Comic Sans MS, Chalkboard\">")
 	writeln("<h1>%s by %s</h1>", escape(def(m.Map.Name, "Untitled")), escape(def(m.Map.Author, "Author Unknown")))
-	writeln("<p><img src=\"%d.png\">", id)
+	writeln("<p><img src=\"%s.png\">", escape(id))
 	if !m.ModTime.IsZero() {
 		writeln("<p>%s", m.ModTime.Format("Monday, January 02 2006 15:04:05 UTC"))
 	}
 	baseURL := "http://cc3d.chuckschallenge.com"
-	if id < 15000 {
+	if n, err := strconv.Atoi(id); err == nil && n < 15000 {
 		baseURL = "http://beta.chuckschallenge.com"
 	}
-	writeln("<p><a rel=\"noreferrer\" href=\"%s/Share.php?levelId=%d\">View this level on chuckschallenge.com</a>", escape(baseURL), id)
+	writeln("<p><a rel=\"noreferrer\" href=\"%s/Share.php?levelId=%s\">View this level on chuckschallenge.com</a>", escape(baseURL), escape(id))
 }
 
 func def(s, defaultStr string) string {
@@ -151,7 +161,7 @@ func def(s, defaultStr string) string {
 	return s
 }
 
-func (s *server) serveMap(w http.ResponseWriter, req *http.Request, id int64) {
+func (s *server) serveMap(w http.ResponseWriter, req *http.Request, id string) {
 	m := s.readLevel(w, req, id)
 	if m == nil {
 		return

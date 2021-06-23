@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"html/template"
 	"image/png"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -47,6 +48,13 @@ func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		idStr := strings.TrimSuffix(base, ".png")
 		if s.isID(idStr) {
 			s.serveMap(w, req, idStr)
+		} else {
+			http.NotFound(w, req)
+		}
+	} else if strings.HasSuffix(base, ".xml") {
+		idStr := strings.TrimSuffix(base, ".xml")
+		if s.isID(idStr) {
+			s.serveXML(w, req, idStr)
 		} else {
 			http.NotFound(w, req)
 		}
@@ -130,6 +138,44 @@ func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id string) 
 	return &Map{m, mtime}
 }
 
+func (s *server) serveXML(w http.ResponseWriter, req *http.Request, id string) {
+	filename := filepath.Join("cc3d_levels", id+".xml.gz")
+	f, err := os.Open(filename)
+	if err != nil {
+		http.NotFound(w, req)
+		return
+	}
+	var r io.Reader
+	if acceptsGzip(req) {
+		w.Header().Set("Content-Encoding", "gzip")
+		r = f
+	} else {
+		zr, err := gzip.NewReader(f)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		r = zr
+	}
+	w.Header().Set("Content-Type", "application/xml")
+	_, err = io.Copy(w, r)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func acceptsGzip(req *http.Request) bool {
+	for _, s := range strings.Split(req.Header.Get("Accept-Encoding"), ",") {
+		v, params, _ := cut(strings.TrimSpace(s), ";")
+		_ = params
+		if v == "gzip" {
+			return true
+		}
+	}
+	return false
+}
+
 func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) {
 	m := s.readLevel(w, req, id)
 	if m == nil {
@@ -147,6 +193,7 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) 
 	if !m.ModTime.IsZero() {
 		writeln("<p>%s", m.ModTime.Format("Monday, January 02 2006 15:04:05 UTC"))
 	}
+	writeln("<p><a href=\"%s.xml\">Raw XML</a>", escape(id))
 	baseURL := "http://cc3d.chuckschallenge.com"
 	if n, err := strconv.Atoi(id); err == nil && n < 15000 {
 		baseURL = "http://beta.chuckschallenge.com"

@@ -3,6 +3,7 @@ package main
 // TODO:
 // - more info on level pages
 // - which tiles go in which layers? what editor categories?
+// - which tiles can have directions?
 // - make rotated reflector tiles
 // - make open toggle doors
 

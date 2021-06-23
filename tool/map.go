@@ -237,16 +237,15 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 2:
 		// 02 (2) = Wall
 		return h["Wall"]
-	case 3, 4, 5, 6, 7:
+	case 3:
 		// 03 (3) = Ice
+		return h["Ice"]
+	case 4, 5, 6, 7:
 		// 04 (4) = Ice Corner
 		// 05 (5) = Ice Corner
 		// 06 (6) = Ice Corner
 		// 07 (7) = Ice Corner
-		if t.Type != 3 {
-			break
-		}
-		return h["Ice"]
+		break // TODO
 	case 8:
 		// 08 (8) = Water
 		return h["Water2"]
@@ -329,8 +328,9 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 44:
 		// 2c (44) = F.I.S.H. Door
 		return h["FISHDoor"]
-	case 45: // ???
+	case 45:
 		// 2d (45) = Push up wall
+		break // TODO
 	case 46:
 		// 2e (46) = Appearing wall
 		return h["InvisibleWalls"]
@@ -492,20 +492,26 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 190:
 		// be (190) = RotatingCC Security Bot
 		return h["Squishy"]
-	case 194:
+	case 191, 192:
 		// bf (191) = Kickstarter BLock
 		// c0 (192) = Developer Support BLock
+		break // TODO
+	case 194:
 		// c2 (194) = Baby Blinky
-		return h["Blinky"]
+		return h["Blinky"] // TODO
 	case 195:
 		// c3 (195) = Baby Screamer
-		return h["Screamer"]
+		return h["Screamer"] // TODO
 	case 196, 197:
 		// c4 (196) = Legs Green
 		// c5 (197) = Legs Red
-		return h["Legs"]
+		return h["Legs"] // TODO
+	case 198:
 		// c6 (198) = Sand
+		break // TODO
+	case 199:
 		// c7 (199) = Red F.I.S.H. Door
+		return h["FISHDoor"]
 	}
 	return nil
 }

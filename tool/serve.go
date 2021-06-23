@@ -141,7 +141,7 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id int64) {
 	if id < 15000 {
 		baseURL = "http://beta.chuckschallenge.com"
 	}
-	writeln("<p><a href=\"%s/Share.php?levelId=%d\">View this level on chuckschallenge.com</a>", escape(baseURL), id)
+	writeln("<p><a rel=\"noreferrer\" href=\"%s/Share.php?levelId=%d\">View this level on chuckschallenge.com</a>", escape(baseURL), id)
 }
 
 func def(s, defaultStr string) string {

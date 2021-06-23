@@ -76,13 +76,14 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 	writeln("<h1>CC3d Level maps</h1>")
 	files, _ := filepath.Glob(filepath.Join("cc3d_levels", "*.xml.gz"))
 	naturalsort.Sort(files)
-	for i, fullname := range files {
-		if i%250 == 0 {
-			writeln("<p>")
-		}
+	writeln("<p>")
+	for _, fullname := range files {
 		name := filepath.Base(fullname)
 		id, _, _ := cut(name, ".")
-		if _, err := strconv.ParseInt(id, 10, 0); err == nil {
+		if n, err := strconv.ParseInt(id, 10, 0); err == nil {
+			if n == 1004 || n == 16501 || n == 17001 || n%250 == 0 {
+				writeln("<p>")
+			}
 			writeln(`<a href="%[1]s">%[1]s</a>`, escape(id))
 		}
 	}

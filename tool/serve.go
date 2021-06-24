@@ -194,6 +194,7 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) 
 		writeln("<p>%s", m.ModTime.Format("Monday, January 02 2006 15:04:05 UTC"))
 	}
 	writeln("<p><a href=\"%s.xml\">Raw XML</a>", escape(id))
+	writeln("| <a rel=\"noreferrer\" href=\"https://s3.amazonaws.com/cc3d-editorreplays/hint_%s.hnt\">Replay</a>", escape(id))
 	baseURL := "http://cc3d.chuckschallenge.com"
 	if n, err := strconv.Atoi(id); err == nil && n < 15000 {
 		baseURL = "http://beta.chuckschallenge.com"

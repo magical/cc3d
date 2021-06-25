@@ -30,13 +30,30 @@ import (
 var portFlag = flag.String("port", ":8080", "port (and host) to listen for HTTP connections on")
 
 func httpMain() {
+	levelDir := "cc3d_levels"
+	if flag.Arg(0) != "" {
+		levelDir = flag.Arg(0)
+	}
 	tileset := loadTiles(tileSize)
-	s := &server{tileset}
+	s := &server{
+		tileset:  tileset,
+		title:    "CC3D",
+		levelDir: levelDir,
+	}
+	if strings.Contains(levelDir, "ben10") {
+		s.title = "Ben 10"
+	}
+	if strings.Contains(levelDir, "cc3d") {
+		s.externalLinks = true
+	}
 	log.Fatal(http.ListenAndServe(*portFlag, s))
 }
 
 type server struct {
-	tileset Tileset
+	tileset       Tileset
+	levelDir      string
+	title         string
+	externalLinks bool
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -78,8 +95,6 @@ func (s *server) isID(idStr string) bool {
 	return false
 }
 
-const levelDir = "cc3d_levels"
-
 var escape = template.HTMLEscapeString
 
 func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
@@ -88,10 +103,10 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, msg+"\n", v...)
 	}
 	writeln("<!doctype html>")
-	writeln("<title>CC3d Level maps</title>")
+	writeln("<title>%s Level maps</title>", escape(s.title))
 	writeln("<body style=\"font-family: Comic Sans MS, Chalkboard\">")
-	writeln("<h1>CC3d Level maps</h1>")
-	files, _ := filepath.Glob(filepath.Join("cc3d_levels", "*.xml.gz"))
+	writeln("<h1>%s Level maps</h1>", escape(s.title))
+	files, _ := filepath.Glob(filepath.Join(s.levelDir, "*.xml.gz"))
 	naturalsort.Sort(files)
 	writeln("<p>")
 	for _, fullname := range files {
@@ -116,7 +131,7 @@ type Map struct {
 // Read the level with the given id.
 // Returns nil and prints an error if the level isn't found an error occurs during parsing.
 func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id string) *Map {
-	filename := filepath.Join("cc3d_levels", id+".xml.gz")
+	filename := filepath.Join(s.levelDir, id+".xml.gz")
 	f, err := os.Open(filename)
 	if err != nil {
 		http.NotFound(w, req)
@@ -139,7 +154,7 @@ func (s *server) readLevel(w http.ResponseWriter, req *http.Request, id string) 
 }
 
 func (s *server) serveXML(w http.ResponseWriter, req *http.Request, id string) {
-	filename := filepath.Join("cc3d_levels", id+".xml.gz")
+	filename := filepath.Join(s.levelDir, id+".xml.gz")
 	f, err := os.Open(filename)
 	if err != nil {
 		http.NotFound(w, req)
@@ -186,7 +201,7 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) 
 		fmt.Fprintf(w, msg+"\n", v...)
 	}
 	writeln("<!doctype html>")
-	writeln("<title>CC3d Levelid %s: %s by %s</title>", escape(id), escape(m.Map.Name), escape(m.Map.Author))
+	writeln("<title>%s Levelid %s: %s by %s</title>", escape(s.title), escape(id), escape(m.Map.Name), escape(m.Map.Author))
 	writeln("<body style=\"font-family: Comic Sans MS, Chalkboard\">")
 	writeln("<h1>%s by %s</h1>", escape(def(m.Map.Name, "Untitled")), escape(def(m.Map.Author, "Author Unknown")))
 	writeln("<p><img src=\"%s.png\">", escape(id))
@@ -194,12 +209,14 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) 
 		writeln("<p>%s", m.ModTime.Format("Monday, January 02 2006 15:04:05 UTC"))
 	}
 	writeln("<p><a href=\"%s.xml\">Raw XML</a>", escape(id))
-	writeln("| <a rel=\"noreferrer\" href=\"https://s3.amazonaws.com/cc3d-editorreplays/hint_%s.hnt\">Replay</a>", escape(id))
-	baseURL := "http://cc3d.chuckschallenge.com"
-	if n, err := strconv.Atoi(id); err == nil && n < 15000 {
-		baseURL = "http://beta.chuckschallenge.com"
+	if s.externalLinks {
+		writeln("| <a rel=\"noreferrer\" href=\"https://s3.amazonaws.com/cc3d-editorreplays/hint_%s.hnt\">Replay</a>", escape(id))
+		baseURL := "http://cc3d.chuckschallenge.com"
+		if n, err := strconv.Atoi(id); err == nil && n < 15000 {
+			baseURL = "http://beta.chuckschallenge.com"
+		}
+		writeln("<p><a rel=\"noreferrer\" href=\"%s/Share.php?levelId=%s\">View this level on chuckschallenge.com</a>", escape(baseURL), escape(id))
 	}
-	writeln("<p><a rel=\"noreferrer\" href=\"%s/Share.php?levelId=%s\">View this level on chuckschallenge.com</a>", escape(baseURL), escape(id))
 }
 
 func def(s, defaultStr string) string {

@@ -10,6 +10,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"image"
 	"image/png"
 	"io"
 	"log"
@@ -24,6 +25,7 @@ import (
 
 	"github.com/juju/naturalsort"
 	"github.com/magical/cc3d"
+	"github.com/nfnt/resize"
 )
 
 var portFlag = flag.String("port", ":8080", "port (and host) to listen for HTTP connections on")
@@ -81,10 +83,17 @@ func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	_, base := path.Split(req.URL.Path)
 	if base == "" {
 		s.serveIndex(w, req)
+	} else if strings.HasSuffix(base, "_thumb.png") {
+		idStr := strings.TrimSuffix(base, "_thumb.png")
+		if s.isID(idStr) {
+			s.serveMap(w, req, idStr, true)
+		} else {
+			http.NotFound(w, req)
+		}
 	} else if strings.HasSuffix(base, ".png") {
 		idStr := strings.TrimSuffix(base, ".png")
 		if s.isID(idStr) {
-			s.serveMap(w, req, idStr)
+			s.serveMap(w, req, idStr, false)
 		} else {
 			http.NotFound(w, req)
 		}
@@ -266,9 +275,9 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) 
 	writeln("<meta property=\"og:site_name\" content=\"%s levels\" />", escape(s.title))
 	writeln("<meta property=\"og:type\" content=\"website\" />")
 	writeln("<meta property=\"og:url\" content=\"%s\" />", escape(u.String()))
-	u.Path += ".png"
+	u.Path += "_thumb.png"
 	u.RawQuery = ""
-	writeln("<meta property=\"og:image\" content=\"%s\" />", escape(u.String())) // TODO: thumbnail
+	writeln("<meta property=\"og:image\" content=\"%s\" />", escape(u.String()))
 
 	writeln("<body style=\"font-family: Comic Sans MS, Chalkboard\">")
 	writeln("<h1>%s</h1>", escape(pageTitle))
@@ -294,16 +303,20 @@ func def(s, defaultStr string) string {
 	return s
 }
 
-func (s *server) serveMap(w http.ResponseWriter, req *http.Request, id string) {
+func (s *server) serveMap(w http.ResponseWriter, req *http.Request, id string, thumbnail bool) {
 	m := s.readLevel(w, req, id)
 	if m == nil {
 		return
 	}
+	var im image.Image
 	im, err := makeMap(m.Map, s.tileset, false)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), 500)
 		return
+	}
+	if thumbnail {
+		im = resize.Thumbnail(200, 200, im, resize.Bilinear)
 	}
 	err = png.Encode(w, im)
 	if err != nil {

@@ -11,6 +11,22 @@ func printlnf(msg string, args ...interface{}) {
 	fmt.Println(fmt.Sprintf(msg, args...))
 }
 
+type lentry struct {
+	layer  string
+	tile   int
+	editor int
+}
+type lset []lentry
+
+func (s lset) append(l lentry) lset {
+	for _, v := range s {
+		if v == l {
+			return s
+		}
+	}
+	return append(s, l)
+}
+
 func PrintInfo(m *Map, levelid string) {
 	fmt.Println(m.Name)
 	fmt.Println(m.Author)
@@ -31,20 +47,26 @@ func PrintInfo(m *Map, levelid string) {
 	type point struct{ X, Y int }
 	var ta = make(map[int][]Attributes)
 	var grid = make(map[point][]Tile)
-	countTiles := func(tiles []Tile) {
+	var layers = make(map[string]lset) // which tiles are in which layers?
+	countTiles := func(tiles []Tile, layerName string) {
 		for _, t := range tiles {
 			ta[t.Type] = addAttrs(ta[t.Type], t.Attributes)
-			p := point{t.X / 64, t.Y / 64}
-			grid[p] = append(grid[p], t)
+			//p := point{t.X / 64, t.Y / 64}
+			//grid[p] = append(grid[p], t)
+			l := lentry{layerName, t.Type, t.Attributes.EditorCategory}
+			layers[layerName] = layers[layerName].append(l)
+		}
+		for _, l := range layers[layerName] {
+			fmt.Println("LAYER", layerName, l.tile, ta[l.tile][0].Name, l.editor)
 		}
 	}
-	countTiles(m.Player)
-	countTiles(m.Tiles)
-	countTiles(m.Objects)
-	countTiles(m.Enemies)
-	countTiles(m.Blocks)
-	countTiles(m.Walls)
-	countTiles(m.Switches)
+	countTiles(m.Player, "player")
+	countTiles(m.Tiles, "tiles")
+	countTiles(m.Objects, "objects")
+	countTiles(m.Enemies, "enemies")
+	countTiles(m.Blocks, "blocks")
+	countTiles(m.Walls, "walls")
+	countTiles(m.Switches, "switches")
 
 	var keys []int
 	for k := range ta {

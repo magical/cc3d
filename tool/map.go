@@ -112,7 +112,11 @@ func makeMap(m *cc3d.Map, tileset Tileset, flip bool) (*image.RGBA, error) {
 			if dir := tileset.Direction(t); dir != nil {
 				draw.DrawMask(im, image.Rect(x, y, x+tileSize, y+tileSize), dir, image.ZP, mask, image.ZP, draw.Over)
 			}
-			base[image.Pt(t.X, t.Y)] = true
+			// Mark this coord as having a base tile drawn
+			// unless it's a Floor, in which case we don't care about drawing over it
+			if t.Type != 1 {
+				base[image.Pt(t.X, t.Y)] = true
+			}
 		}
 	}
 	// 16287: Colored blocks are in the Tiles layer, Clone machines are in the Walls layer

@@ -233,7 +233,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	switch t.Type {
 	case 1:
 		//01 (1) = Floor Tile
-		return h["Floor"]
+		return h["Floor2"]
 	case 2:
 		// 02 (2) = Wall
 		return h["Wall"]
@@ -264,10 +264,12 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["ConveyorSouth"]
 	case 13:
 		return h["ConveyorWest"]
-	case 14, 15:
+	case 14:
 		// 0e (14) = Closed toggle door
-		// 0f (15) = Open toggle door
 		return h["PushGateGreen"]
+	case 15:
+		// 0f (15) = Open toggle door
+		return h["PushGateGreenOpen"]
 	case 16, 17:
 		// 10 (16) = Red teleport
 		// 11 (17) = Blue teleport
@@ -286,7 +288,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["Mound"]
 	case 24:
 		// 18 (24) = Walker
-		return h["Legs"] // Blue
+		return h["LegsBlue"] // Blue
 	case 25:
 		// 19 (25) = Blinky
 		return h["Blinky"]
@@ -298,36 +300,45 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["Gravel"]
 	case 31:
 		// 1f (31) = Toggle door control
-		return h["PushButton"]
+		return h["PushButtonGreen"]
 	case 32:
 		// 20 (32) = Blue Golem control
 		return h["GolemBlueSwitch"]
 	case 33:
 		// 21 (33) = Blue Golem
 		return h["GolemBlue"]
-	case 34, 36, 37:
+	case 34:
 		// 22 (34) = Red door
-		// 23 (35) = Blue door
-		// 24 (36) = Yellow door
-		// 25 (37) = Green door
-		break
+		return h["RedDoor"]
 	case 35:
-		return h["Doors"]
-	case 38, 39, 40:
+		// 23 (35) = Blue door
+		return h["BlueDoor"]
+	case 36:
+		// 24 (36) = Yellow door
+		return h["YellowDoor"]
+	case 37:
+		// 25 (37) = Green door
+		return h["GreenDoor"]
+	case 38:
 		// 26 (38) = Red key
+		return h["RedKey"]
+	case 39:
 		// 27 (39) = Blue key
+		return h["BlueKey2"]
+	case 40:
 		// 28 (40) = Yellow key
+		return h["YellowKey"]
 		break
 	case 41:
 		// 29 (41) = Green key
-		return h["Key"]
+		return h["GreenKey"]
 	case 42, 43:
 		// 2a (42) = F.I.S.H.
 		// 2b (43) = EXTRA F.I.S.H.
-		return h["FISH"]
+		return h["FISHCentered"]
 	case 44:
 		// 2c (44) = F.I.S.H. Door
-		return h["FISHDoor"]
+		return h["FISHDoorBlue"]
 	case 45:
 		// 2d (45) = Push up wall
 		break // TODO
@@ -436,9 +447,13 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["PressurePad"]
 	case 157:
 		return h["PressurePadYellow"]
-	case 158, 159, 160:
+	case 158:
 		// 9e (158) = Toggle Blue Control
+		return h["PushButtonBlue"]
+	case 159:
 		// 9f (159) = Toggle Red Control
+		return h["PushButtonRed"]
+	case 160:
 		// a0 (160) = Toggle Yellow Control
 		return h["PushButton"]
 	case 161:
@@ -464,13 +479,13 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 166:
 		return h["PushGateRed"]
 	case 167:
-		return h["PushGate"]
+		return h["PushGateYellow"]
 	case 168:
-		return h["PushGateBlue"]
+		return h["PushGateBlueOpen"]
 	case 169:
-		return h["PushGateRed"]
+		return h["PushGateRedOpen"]
 	case 170:
-		return h["PushGate"]
+		return h["PushGateOpen"]
 	case 175:
 		// af (175) = Push Green Door Closed
 		// b0 (176) = Push Blue Door Closed
@@ -483,12 +498,18 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["PressureGate"]
 	case 178:
 		return h["PressureGateYellow"]
-	case 184, 185, 186, 187:
+	case 184:
 		// b8 (184) = Reflector LU
 		// b9 (185) = Reflector DL
 		// ba (186) = Reflector UR
 		// bb (187) = Reflector RD
-		return h["Reflector"]
+		return h["ReflectorLU"]
+	case 185:
+		return h["ReflectorDL"]
+	case 186:
+		return h["ReflectorUR"]
+	case 187:
+		return h["ReflectorRD"]
 	case 190:
 		// be (190) = RotatingCC Security Bot
 		return h["Squishy"]
@@ -502,16 +523,18 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 195:
 		// c3 (195) = Baby Screamer
 		return h["Screamer"] // TODO
-	case 196, 197:
+	case 196:
 		// c4 (196) = Legs Green
+		return h["LegsGreen"]
+	case 197:
 		// c5 (197) = Legs Red
-		return h["Legs"] // TODO
+		return h["LegsRed"]
 	case 198:
 		// c6 (198) = Sand
 		break // TODO
 	case 199:
 		// c7 (199) = Red F.I.S.H. Door
-		return h["FISHDoor"]
+		return h["FISHDoorRed"]
 	}
 	return nil
 }

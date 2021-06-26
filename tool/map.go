@@ -324,7 +324,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["RedKey"]
 	case 39:
 		// 27 (39) = Blue key
-		return h["BlueKey2"]
+		return h["BlueKey"]
 	case 40:
 		// 28 (40) = Yellow key
 		return h["YellowKey"]

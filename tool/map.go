@@ -317,7 +317,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["RedDoor"]
 	case 35:
 		// 23 (35) = Blue door
-		return h["BlueDoor"]
+		return h["Doors"]
 	case 36:
 		// 24 (36) = Yellow door
 		return h["YellowDoor"]

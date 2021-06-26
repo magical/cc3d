@@ -380,7 +380,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		break
 	case 63:
 		// 3f (63) = Security Gate Tools
-		return h["SecurityGate"]
+		return h["SecurityGateBlue"]
 	case 64:
 		// 40 (64) = Red bomb
 		return h["Bomb"]

@@ -282,7 +282,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["Slime"]
 	case 22:
 		// 16 (22) = Woop
-		return h["Woop"]
+		return h["WoopCentered"]
 	case 23:
 		// 17 (23) = Dirt block
 		return h["Mound"]
@@ -291,7 +291,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["LegsBlue"] // Blue
 	case 25:
 		// 19 (25) = Blinky
-		return h["Blinky"]
+		return h["BlinkyCentered"]
 	case 26:
 		// 1a (26) = Ice block
 		return h["IceGem"]
@@ -306,7 +306,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["GolemBlueSwitch"]
 	case 33:
 		// 21 (33) = Blue Golem
-		return h["GolemBlue"]
+		return h["GolemBlueCentered"]
 	case 34:
 		// 22 (34) = Red door
 		return h["RedDoor"]
@@ -359,16 +359,16 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["LimpyR"]
 	case 53:
 		// 35 (53) = Bouncer
-		return h["Bouncer"]
+		return h["BouncerCentered"]
 	case 54:
 		// 36 (54) = Omni
 		return h["Omni"]
 	case 55:
 		// 37 (55) = Snappy
-		return h["Snappy"]
+		return h["SnappyCentered"]
 	case 56:
 		// 38 (56) = Screamer
-		return h["Screamer"]
+		return h["ScreamerCentered"]
 	case 57:
 		// 39 (57) = Clone machine switch
 		return h["CloneButton"]
@@ -400,7 +400,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// 48 (72) = Regular Security Bot
 		// 49 (73) = Rotating Security Bot
 		// 4a (74) = Multidirectional Security Bot
-		return h["Squishy"]
+		return h["SquishyCentered"]
 	case 75:
 		// 4b (75) = Laser Controller
 		return h["SpitterButton"]
@@ -409,10 +409,10 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["Spitter"]
 	case 87:
 		// 57 (87) = Nibble
-		return h["Nibbles"]
+		return h["NibblesCentered"]
 	case 99:
 		// 63 (99) = Yellow Golem
-		return h["GolemYellow"]
+		return h["GolemYellowCentered"]
 	case 100:
 		// 64 (100) = Yellow Golem control
 		return h["GolemYellowSwitch"]
@@ -512,17 +512,17 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["ReflectorRD"]
 	case 190:
 		// be (190) = RotatingCC Security Bot
-		return h["Squishy"]
+		return h["SquishyCentered"]
 	case 191, 192:
 		// bf (191) = Kickstarter BLock
 		// c0 (192) = Developer Support BLock
 		break // TODO
 	case 194:
 		// c2 (194) = Baby Blinky
-		return h["Blinky"] // TODO
+		return h["BlinkyCentered"] // TODO
 	case 195:
 		// c3 (195) = Baby Screamer
-		return h["Screamer"] // TODO
+		return h["ScreamerCentered"] // TODO
 	case 196:
 		// c4 (196) = Legs Green
 		return h["LegsGreen"]

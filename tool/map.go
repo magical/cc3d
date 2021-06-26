@@ -254,15 +254,15 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["Lava"]
 	case 10:
 		// 0a (10) = Force floor
-		// 0b (11) = Force floor
-		// 0c (12) = Force floor
-		// 0d (13) = Force floor
 		return h["ConveyorNorth"]
 	case 11:
+		// 0b (11) = Force floor
 		return h["ConveyorEast"]
 	case 12:
+		// 0c (12) = Force floor
 		return h["ConveyorSouth"]
 	case 13:
+		// 0d (13) = Force floor
 		return h["ConveyorWest"]
 	case 14:
 		// 0e (14) = Closed toggle door
@@ -273,7 +273,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 16, 17:
 		// 10 (16) = Red teleport
 		// 11 (17) = Blue teleport
-		return h["Teleports"]
+		return h["Teleports"] // TODO
 	case 20:
 		// 14 (20) = Exit
 		return h["Exit"]
@@ -288,7 +288,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["Mound"]
 	case 24:
 		// 18 (24) = Walker
-		return h["LegsBlue"] // Blue
+		return h["LegsBlue"]
 	case 25:
 		// 19 (25) = Blinky
 		return h["BlinkyCentered"]
@@ -328,7 +328,6 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 40:
 		// 28 (40) = Yellow key
 		return h["YellowKey"]
-		break
 	case 41:
 		// 29 (41) = Green key
 		return h["GreenKey"]
@@ -437,15 +436,15 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h[panels[dir]]
 	case 154:
 		// 9a (154) = Blue Push Control
-		// 9b (155) = Green Push Control
-		// 9c (156) = Red Push Control
-		// 9d (157) = Yellow Push Control
 		return h["PressurePadBlue"]
 	case 155:
+		// 9b (155) = Green Push Control
 		return h["PressurePadGreen"]
 	case 156:
+		// 9c (156) = Red Push Control
 		return h["PressurePad"]
 	case 157:
+		// 9d (157) = Yellow Push Control
 		return h["PressurePadYellow"]
 	case 158:
 		// 9e (158) = Toggle Blue Control
@@ -458,57 +457,57 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["PushButton"]
 	case 161:
 		// a1 (161) = Blue Block
-		// a2 (162) = Green Block
-		// a3 (163) = Red Block
-		// a4 (164) = Yellow Block
 		return h["BlueBlock"]
 	case 162:
+		// a2 (162) = Green Block
 		return h["GreenBlock"]
 	case 163:
+		// a3 (163) = Red Block
 		return h["RedBlock"]
 	case 164:
+		// a4 (164) = Yellow Block
 		return h["ColouredBlock"]
 	case 165:
-		// a5 (165) = Toggle Blue Door Closed/Open
-		// a6 (166) = Toggle Red Door Closed/Open
-		// a7 (167) = Toggle Yellow Door Closed/Open
-		// a8 (168) = Toggle Blue Door Open/Closed
-		// a9 (169) = Toggle Red Door Open/Closed
-		// aa (170) = Toggle Yellow Door Open/Closed
+		// a5 (165) = Toggle Blue Door Closed
 		return h["PushGateBlue"]
 	case 166:
+		// a6 (166) = Toggle Red Door Closed
 		return h["PushGateRed"]
 	case 167:
+		// a7 (167) = Toggle Yellow Door Closed
 		return h["PushGateYellow"]
 	case 168:
+		// a8 (168) = Toggle Blue Door Open
 		return h["PushGateBlueOpen"]
 	case 169:
+		// a9 (169) = Toggle Red Door Open
 		return h["PushGateRedOpen"]
 	case 170:
+		// aa (170) = Toggle Yellow Door Open
 		return h["PushGateOpen"]
 	case 175:
 		// af (175) = Push Green Door Closed
-		// b0 (176) = Push Blue Door Closed
-		// b1 (177) = Push Red Door Closed
-		// b2 (178) = Push Yellow Door Closed
 		return h["PressureGateGreen"]
 	case 176:
+		// b0 (176) = Push Blue Door Closed
 		return h["PressureGateBlue"]
 	case 177:
+		// b1 (177) = Push Red Door Closed
 		return h["PressureGate"]
 	case 178:
+		// b2 (178) = Push Yellow Door Closed
 		return h["PressureGateYellow"]
 	case 184:
 		// b8 (184) = Reflector LU
-		// b9 (185) = Reflector DL
-		// ba (186) = Reflector UR
-		// bb (187) = Reflector RD
 		return h["ReflectorLU"]
 	case 185:
+		// b9 (185) = Reflector DL
 		return h["ReflectorDL"]
 	case 186:
+		// ba (186) = Reflector UR
 		return h["ReflectorUR"]
 	case 187:
+		// bb (187) = Reflector RD
 		return h["ReflectorRD"]
 	case 190:
 		// be (190) = RotatingCC Security Bot
@@ -516,7 +515,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 	case 191, 192:
 		// bf (191) = Kickstarter BLock
 		// c0 (192) = Developer Support BLock
-		break // TODO
+		return h["RedBlock"] // TODO
 	case 194:
 		// c2 (194) = Baby Blinky
 		return h["BlinkyCentered"] // TODO

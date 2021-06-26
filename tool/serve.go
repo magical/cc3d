@@ -237,10 +237,22 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) 
 	writeln := func(msg string, v ...interface{}) {
 		fmt.Fprintf(w, msg+"\n", v...)
 	}
+	u := *req.URL
+	u.Host = req.Host
+	u.Scheme = "http" // TODO https
+	pageTitle := fmt.Sprintf("%s by %s", def(m.Map.Name, "Untitled"), def(m.Map.Author, "Author Unknown"))
 	writeln("<!doctype html>")
-	writeln("<title>%s Levelid %s: %s by %s</title>", escape(s.title), escape(id), escape(m.Map.Name), escape(m.Map.Author))
+	writeln("<title>%s Levelid %s: %s</title>", escape(s.title), escape(id), escape(pageTitle))
+	writeln("<meta property=\"og:title\" content=\"%s: %s\" />", escape(id), escape(pageTitle))
+	writeln("<meta property=\"og:site_name\" content=\"%s levels\" />", escape(s.title))
+	writeln("<meta property=\"og:type\" content=\"website\" />")
+	writeln("<meta property=\"og:url\" content=\"%s\" />", escape(u.String()))
+	u.Path += ".png"
+	u.RawQuery = ""
+	writeln("<meta property=\"og:image\" content=\"%s\" />", escape(u.String())) // TODO: thumbnail
+
 	writeln("<body style=\"font-family: Comic Sans MS, Chalkboard\">")
-	writeln("<h1>%s by %s</h1>", escape(def(m.Map.Name, "Untitled")), escape(def(m.Map.Author, "Author Unknown")))
+	writeln("<h1>%s</h1>", escape(pageTitle))
 	writeln("<p><img src=\"%s.png\">", escape(id))
 	if !m.ModTime.IsZero() {
 		writeln("<p>%s", m.ModTime.Format("Monday, January 02 2006 15:04:05 UTC"))

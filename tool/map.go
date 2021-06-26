@@ -475,7 +475,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["PushGateRed"]
 	case 167:
 		// a7 (167) = Toggle Yellow Door Closed
-		return h["PushGateYellow"]
+		return h["PushGate"]
 	case 168:
 		// a8 (168) = Toggle Blue Door Open
 		return h["PushGateBlueOpen"]
@@ -484,7 +484,7 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		return h["PushGateRedOpen"]
 	case 170:
 		// aa (170) = Toggle Yellow Door Open
-		return h["PushGateOpen"]
+		return h["PushGateYellowOpen"]
 	case 175:
 		// af (175) = Push Green Door Closed
 		return h["PressureGateGreen"]

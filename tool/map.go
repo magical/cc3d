@@ -122,12 +122,13 @@ func makeMap(m *cc3d.Map, tileset Tileset, flip bool) (*image.RGBA, error) {
 	// 16287: Colored blocks are in the Tiles layer, Clone machines are in the Walls layer
 	// 16287: Colored blocks in Tiles layer on top of toggle walls in the Walls layer
 	// 1366: Panel walls in both the Blocks and Walls layers
+	// TODO: experiment with drawing objects on top of blocks+enemies
 	drawTiles(m.Switches)
 	drawTiles(m.Tiles)
 	drawTiles(m.Walls)
 	drawTiles(m.Objects)
-	drawTiles(m.Enemies)
 	drawTiles(m.Blocks)
+	drawTiles(m.Enemies)
 	drawTiles(m.Player)
 	//im = resize.Resize(uint(dx/2), uint(dy/2), im, resize.NearestNeighbor).(*image.RGBA)
 	return im, nil

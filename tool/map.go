@@ -521,6 +521,10 @@ func (h ImageMap) tileImage(t cc3d.Tile) image.Image {
 		// bf (191) = Kickstarter BLock
 		// c0 (192) = Developer Support BLock
 		return h["RedBlock"] // TODO
+	case 193:
+		// Ben 10: Slime
+		// TODO: why does this have a different id?
+		return h["Slime"]
 	case 194:
 		// c2 (194) = Baby Blinky
 		return h["BlinkyCentered"] // TODO

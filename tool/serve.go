@@ -29,24 +29,40 @@ import (
 var portFlag = flag.String("port", ":8080", "port (and host) to listen for HTTP connections on")
 
 func httpMain() {
-	levelDir := "cc3d_levels"
-	if flag.Arg(0) != "" {
-		levelDir = flag.Arg(0)
+	dirs := flag.Args()
+	if len(dirs) == 0 {
+		dirs = []string{"cc3d_levels"}
 	}
+	var mux http.ServeMux
+	var h http.Handler = &mux
 	tileset := loadTiles(tileSize)
-	s := &server{
-		tileset:  tileset,
-		title:    "CC3D",
-		levelDir: levelDir,
+	for i, levelDir := range dirs {
+		if _, err := os.Stat(levelDir); err != nil {
+			log.Println("warning: cannot access level dir:", err)
+		}
+		s := &server{
+			tileset:  tileset,
+			title:    "CC3D",
+			levelDir: levelDir,
+		}
+		dirname := filepath.Base(levelDir)
+		if strings.Contains(dirname, "ben10") {
+			s.title = "Ben 10"
+		}
+		if strings.Contains(dirname, "cc3d") {
+			s.externalLinks = true
+		}
+		go s.buildIndex()
+		if i == 0 {
+			mux.Handle("/", s)
+		} else {
+			mux.Handle("/"+dirname+"/", s)
+		}
+		if len(dirs) == 1 {
+			h = s
+		}
 	}
-	if strings.Contains(levelDir, "ben10") {
-		s.title = "Ben 10"
-	}
-	if strings.Contains(levelDir, "cc3d") {
-		s.externalLinks = true
-	}
-	go s.buildIndex()
-	log.Fatal(http.ListenAndServe(*portFlag, s))
+	log.Fatal(http.ListenAndServe(*portFlag, h))
 }
 
 type server struct {
@@ -60,9 +76,12 @@ type server struct {
 func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "GET" {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-	} else if req.URL.Path == "/" {
+		return
+	}
+	_, base := path.Split(req.URL.Path)
+	if base == "" {
 		s.serveIndex(w, req)
-	} else if base := path.Base(req.URL.Path); strings.HasSuffix(base, ".png") {
+	} else if strings.HasSuffix(base, ".png") {
 		idStr := strings.TrimSuffix(base, ".png")
 		if s.isID(idStr) {
 			s.serveMap(w, req, idStr)

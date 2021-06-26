@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/juju/naturalsort"
@@ -46,6 +47,7 @@ func httpMain() {
 	if strings.Contains(levelDir, "cc3d") {
 		s.externalLinks = true
 	}
+	go s.buildIndex()
 	log.Fatal(http.ListenAndServe(*portFlag, s))
 }
 
@@ -54,6 +56,7 @@ type server struct {
 	levelDir      string
 	title         string
 	externalLinks bool
+	index         sync.Map
 }
 
 func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -86,6 +89,32 @@ func (s *server) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+type levelInfo struct {
+	Name   string
+	Author string
+}
+
+func (s *server) buildIndex() {
+	files, _ := filepath.Glob(filepath.Join(s.levelDir, "*.xml.gz"))
+	naturalsort.Sort(files)
+	for _, fullname := range files {
+		fullname := fullname
+		func() {
+			f, err := os.Open(fullname)
+			if err != nil {
+				return
+			}
+			defer f.Close()
+			m, err := cc3d.ReadLevel(f)
+			if err != nil {
+				return
+			}
+			id, _, _ := cut(filepath.Base(fullname), ".")
+			s.index.Store(id, levelInfo{m.Name, m.Author})
+		}()
+	}
+}
+
 // Reports whether idStr looks like a valid levelid.
 // Might not actually be valid.
 func (s *server) isID(idStr string) bool {
@@ -99,8 +128,9 @@ var escape = template.HTMLEscapeString
 
 func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	writeln := func(msg string, v ...interface{}) {
-		fmt.Fprintf(w, msg+"\n", v...)
+	writeln := func(msg string, v ...interface{}) error {
+		_, err := fmt.Fprintf(w, msg+"\n", v...)
+		return err
 	}
 	writeln("<!doctype html>")
 	writeln("<title>%s Level maps</title>", escape(s.title))
@@ -118,7 +148,16 @@ func (s *server) serveIndex(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 		if s.isID(id) {
-			writeln(`<a href="%[1]s">%[1]s</a>`, escape(id))
+			var err error
+			if v, ok := s.index.Load(id); ok {
+				li := v.(levelInfo)
+				err = writeln(`<a href="%[1]s" title="%[2]s by %[3]s">%[1]s</a>`, escape(id), escape(li.Name), escape(li.Author))
+			} else {
+				err = writeln(`<a href="%[1]s">%[1]s</a>`, escape(id))
+			}
+			if err != nil {
+				break
+			}
 		}
 	}
 }

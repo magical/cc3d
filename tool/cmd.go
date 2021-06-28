@@ -13,6 +13,7 @@ func main() {
 	listFlag := flag.Bool("info", false, "list info for one or more levels")
 	mapFlag := flag.Bool("map", false, "convert a level into an image")
 	httpFlag := flag.Bool("http", false, "serve level maps over HTTP")
+	convertFlag := flag.Bool("convert", false, "convert cc3d xml to c2m")
 	flag.Parse()
 	if *listFlag {
 		if *httpFlag {
@@ -30,5 +31,10 @@ func main() {
 		}
 		log.SetFlags(log.LstdFlags)
 		httpMain()
+	} else if *convertFlag {
+		if *httpFlag || *listFlag || *mapFlag {
+			log.Fatal("cannot use -convert with -http or -map or -list")
+		}
+		convertMain()
 	}
 }

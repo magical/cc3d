@@ -38,11 +38,14 @@ func mapMain() {
 }
 
 func doMap(filename, outname string) (err error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
+	f := os.Stdin
+	if filename != "-" {
+		f, err = os.Open(filename)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
 	}
-	defer f.Close()
 	m, err := cc3d.ReadLevel(f)
 	if err != nil {
 		return err

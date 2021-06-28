@@ -6,7 +6,10 @@ package main
 // - which tiles can have directions?
 
 import (
+	"bytes"
 	"compress/gzip"
+	"encoding/base64"
+	"errors"
 	"flag"
 	"fmt"
 	"html/template"
@@ -15,6 +18,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -25,6 +29,7 @@ import (
 
 	"github.com/juju/naturalsort"
 	"github.com/magical/cc3d"
+	"github.com/magical/cc3d/c2m"
 	"github.com/nfnt/resize"
 )
 
@@ -288,6 +293,14 @@ func (s *server) serveInfo(w http.ResponseWriter, req *http.Request, id string) 
 	writeln("<p><a href=\"%s.xml\">Raw XML</a>", escape(id))
 	if s.externalLinks {
 		writeln("| <a rel=\"noreferrer\" href=\"https://s3.amazonaws.com/cc3d-editorreplays/hint_%s.hnt\">Replay</a>", escape(id))
+	}
+	l, err := toLexyURL(m)
+	if err == nil {
+		writeln("<p><a href=\"%s\">Play in Lexy's Labyrinth</a>", escape(l))
+	} else {
+		writeln("<p><strike title=\"%s\">Play in Lexy's Labyrinth</strike>", escape(err.Error()))
+	}
+	if s.externalLinks {
 		baseURL := "http://cc3d.chuckschallenge.com"
 		if n, err := strconv.Atoi(id); err == nil && n < 15000 {
 			baseURL = "http://beta.chuckschallenge.com"
@@ -324,4 +337,25 @@ func (s *server) serveMap(w http.ResponseWriter, req *http.Request, id string, t
 		// too late to change the response
 		return
 	}
+}
+
+func toLexyURL(m *Map) (url_ string, err error) {
+	defer func() {
+		if v := recover(); v != nil {
+			log.Println(err)
+			url_, err = "", errors.New("level conversion panicked")
+		}
+	}()
+	c, err := cc3d.Convert(m.Map)
+	if err != nil {
+		return "", err
+	}
+	b := new(bytes.Buffer)
+	err = c2m.Encode(b, c)
+	if err != nil {
+		return "", err
+	}
+	s := base64.URLEncoding.EncodeToString(b.Bytes())
+	url_ = "https://c.eev.ee/lexys-labyrinth/?level=" + url.QueryEscape(s)
+	return url_, nil
 }

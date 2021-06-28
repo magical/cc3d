@@ -256,20 +256,22 @@ func Convert(m *Map) (*c2m.Map, error) {
 			//  bb (187) Reflector RD
 			//  be (190) RotatingCC Security Bot -> nothing
 			return nil, fmt.Errorf("tile %d (%s) not supported in C2M", t.Type, t.Attributes.Name)
+		case 0x9e, 0x9f, 0xa0, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa:
+			// More unsupported elements:
+			//  9e (158) Toggle Blue Control
+			//  9f (159) Toggle Red Control
+			//  a0 (160) Toggle Yellow Control
+			//  a5 (165) Toggle Blue Door Closed
+			//  a6 (166) Toggle Red Door Closed
+			//  a7 (167) Toggle Yellow Door Closed
+			//  a8 (168) Toggle Blue Door Open
+			//  a9 (169) Toggle Red Door Open
+			//  aa (170) Toggle Yellow Door Open
+			return nil, fmt.Errorf("tile %d (%s) not supported in C2M", t.Type, t.Attributes.Name)
 		}
 		// TODO:
 		//  bf (191) Kickstarter BLock -> F1 sokoban block
 		//  c0 (192) Developer Support BLock -> F1 sokoban block
-		// Unsupported:
-		//  9e (158) Toggle Blue Control
-		//  9f (159) Toggle Red Control
-		//  a0 (160) Toggle Yellow Control
-		//  a5 (165) Toggle Blue Door Closed
-		//  a6 (166) Toggle Red Door Closed
-		//  a7 (167) Toggle Yellow Door Closed
-		//  a8 (168) Toggle Blue Door Open
-		//  a9 (169) Toggle Red Door Open
-		//  aa (170) Toggle Yellow Door Open
 
 		// TODO: rotate force floors, ice corners, reflectors
 

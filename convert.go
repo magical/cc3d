@@ -205,6 +205,18 @@ func Convert(m *Map) (*c2m.Map, error) {
 			continue
 		case 2: // Wall
 			id = 0x30 // Blue Wall
+		case 10:
+			//0a (10) = Force floor
+			//0b (11) = Force floor
+			//0c (12) = Force floor
+			//0d (13) = Force floor
+			id = 13
+		case 11:
+			id = 10
+		case 12:
+			id = 11
+		case 13:
+			id = 12
 		case 0x41: // Trap
 			id = 0x42 // Trap
 		case 0x42: // Trap control
@@ -279,7 +291,8 @@ func Convert(m *Map) (*c2m.Map, error) {
 		//  bf (191) Kickstarter BLock -> F1 sokoban block
 		//  c0 (192) Developer Support BLock -> F1 sokoban block
 
-		// TODO: rotate force floors, ice corners, reflectors
+		// TODO: rotate ice corners, reflectors
+		// TODO: fix clone machines
 
 		dir := (t.Direction + 3) % 4
 		v := c2m.Tile{

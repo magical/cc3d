@@ -179,6 +179,8 @@ func (t Tile) hasExtra() bool {
 	return false
 }
 
+func (t Tile) HasDir() bool { return t.hasDir() } // FIXME: don't export
+
 func (t Tile) String() string {
 	if int(t.ID) < len(tilespec) && tilespec[t.ID].Name != "" {
 		return fmt.Sprintf("%d %s", t.ID, tilespec[t.ID].Name)

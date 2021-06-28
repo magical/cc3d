@@ -3,6 +3,7 @@ package cc3d
 // Convert a level to C2M
 import (
 	"fmt"
+	"math/bits"
 	"sort"
 
 	"github.com/magical/cc3d/c2m"
@@ -301,6 +302,20 @@ func Convert(m *Map) (*c2m.Map, error) {
 			Flags: mod,
 		}
 		tiles[i] = append(tiles[i], v)
+	}
+
+	// Fix clones
+	// FIXME this is very hacky
+	for i := range tiles {
+		if !(len(tiles[i]) > 0 || tiles[i][0].ID == 0x44) {
+			continue
+		}
+		cloneDir := bits.Len32(tiles[i][0].Flags) - 1
+		for j := range tiles[i] {
+			if tiles[i][j].HasDir() {
+				tiles[i][j].Dir = uint8(cloneDir)
+			}
+		}
 	}
 
 	// Add panel walls

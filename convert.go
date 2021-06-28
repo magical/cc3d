@@ -189,9 +189,9 @@ func Convert(m *Map) (*c2m.Map, error) {
 		i := y*w + x
 
 		// if it's a panel wall, combine it into the panel masks
+		// no need to rotate; 0 is already North in the rotated reference frame
 		if t.isPanel() {
 			d := t.Direction
-			d = (d + 3) % 4 // rotate
 			panel[i] |= 1 << d
 			continue
 		}
@@ -200,12 +200,18 @@ func Convert(m *Map) (*c2m.Map, error) {
 		mod := uint32(0)
 		// Special cased stuff
 		switch id {
+		case 0:
+			// Invalid tile, ignore
+			continue
 		case 2: // Wall
 			id = 0x30 // Blue Wall
 		case 0x41: // Trap
 			id = 0x42 // Trap
 		case 0x42: // Trap control
 			id = 0x3A // Brown button
+		case 0x44: // Clone Machine
+			d := (t.Direction + 3) % 4
+			mod = 1 << d
 		case 0xc2, 0xc4:
 			//  c2 (194) Baby Blinky -> 19 glider
 			//  c4 (196) Legs Green -> 19 glider

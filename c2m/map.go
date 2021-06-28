@@ -79,6 +79,7 @@ func encodeMap(tiles [][]Tile, w, h int) ([]byte, error) {
 		// iterate backwards; our stacks go from bottom to top
 		for j := len(stack) - 1; j >= 0; j-- {
 			t := stack[j]
+			encodeTile(b, t)
 			if j == 0 && t.hasLower() {
 				// Insert a virtual Floor tile if the bottommost tile is allowed to have a tile underneath
 				b.WriteByte(0x1)
@@ -87,7 +88,6 @@ func encodeMap(tiles [][]Tile, w, h int) ([]byte, error) {
 				// TODO: better error
 				return nil, fmt.Errorf("tile should be at bottom of stack: %v", t)
 			}
-			encodeTile(b, t)
 		}
 	}
 	return b.Bytes(), nil
@@ -177,6 +177,13 @@ func (t Tile) hasExtra() bool {
 		return tilespec[t.ID].Flags&hasExtra != 0
 	}
 	return false
+}
+
+func (t Tile) String() string {
+	if int(t.ID) < len(tilespec) && tilespec[t.ID].Name != "" {
+		return fmt.Sprintf("%d %s", t.ID, tilespec[t.ID].Name)
+	}
+	return fmt.Sprintf("%d Unknown tile", t.ID)
 }
 
 var tilespec = [...]meta{
